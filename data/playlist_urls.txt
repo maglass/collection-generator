@@ -14,7 +14,7 @@
 
 # 다이어트한의사 쏘팟
 # 다이어트 관련 지식. 자막 생성 잘됨
-- 맛있는 다이어트	https://www.youtube.com/channel/UCfBfmh1R2gLox8LWNA_rpYQ
+- 맛있는 다이어트	https://www.youtube.com/watch?v=5IOFfTW7Ri8&list=PLDsz9b-EKyMeqJbk9OQTZWqm3Wvfjf5OT
 - 아는만큰 빠진다	https://www.youtube.com/watch?v=e9ew_TGVZOA&list=PLDsz9b-EKyMdKx82rmvkTk_H2QgCK5AHm
 - 식이섬유	https://www.youtube.com/watch?v=KvHzQsAgCNE&list=PLDsz9b-EKyMfF1bssZR7VVs6e-5bgPBlq
 
