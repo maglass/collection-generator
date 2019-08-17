@@ -1,10 +1,16 @@
 from core import index
 import logging
+import sys
+
 if __name__ == '__main__':
     logging.getLogger().setLevel(logging.INFO)
-    index_name = 'collection-2019-08-15'
-    collection_path = 'data/collections/collection-2019-08-14'
-    header_path = 'data/collections/header.csv'
+    index_name = sys.argv[1]
+    collection_path = sys.argv[2]
+    header_path = sys.argv[3]
+
+    logging.info(index_name)
+    logging.info(collection_path)
+    logging.info(header_path)
 
     index.delete(index_name)
     index.create(index_name)

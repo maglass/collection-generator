@@ -25,6 +25,49 @@ def create(index_name, host=None):
         logging.info("Success create index: {}".format(index_name))
 
 
+def add_alias(index_name, alias, host=None):
+    if not host:
+        host = configs.ELASTIC_SEARCH_HOST
+    headers = {'Content-Type': 'application/json; charset=utf-8'}
+    url = common.url_join(host, '_aliases')
+    actions = [{"add": {"index": index_name, "alias": alias}}]
+    body = json.dumps({"actions": actions})
+    rr = requests.post(url, headers=headers, data=body)
+
+
+def switch_alias(index_name, alias, host=None):
+    if not host:
+        host = configs.ELASTIC_SEARCH_HOST
+
+    registered_index_names = _get_index_names_with_alias(alias)
+    if not registered_index_names:
+        add_alias(index_name, alias)
+    else:
+        actions = list()
+        prev_index_name = registered_index_names[0]
+        actions.append({"remove": {"index": prev_index_name, "alias": alias}})
+        actions.append({"add": {"index": index_name, "alias": alias}})
+
+        body = json.dumps({'actions': actions})
+        headers = {'Content-Type': 'application/json; charset=utf-8'}
+        url = common.url_join(host, '_aliases')
+        requests.post(url, data=body, headers=headers)
+
+
+def _get_index_names_with_alias(alias_name, host=None):
+    if not host:
+        host = configs.ELASTIC_SEARCH_HOST
+    url = common.url_join(host, '_alias', alias_name)
+    rr = requests.get(url)
+    if rr.status_code == 404:
+        return list()
+
+    content = rr.json()
+    index_names = list(content.keys())
+    index_names.sort()
+    return index_names
+
+
 def bulk(index_name, collection_path, header_path, host=None, buffer_size=100, sleep_time=0.3):
     def _p_doc(_fields, _values):
         _doc = {ff: vv for ff, vv in zip(_fields, _values)}
@@ -37,7 +80,7 @@ def bulk(index_name, collection_path, header_path, host=None, buffer_size=100, s
     def _flush(_buffer):
         logging.info('index {}'.format(len(_buffer) // 2))
         body = '\n'.join(json.dumps(b) for b in _buffer) + '\n'
-        rr = requests.post(url, headers=headers, data=body)
+        requests.post(url, headers=headers, data=body)
         _buffer[:] = list()
 
     if not host:
@@ -52,7 +95,7 @@ def bulk(index_name, collection_path, header_path, host=None, buffer_size=100, s
         buffer = list()
         seen = set()
         for line in rf:
-            values = line.rstrip('\n').split(':+;+:')
+            values = line.rstrip('\n').split('\t')
             _id, doc = _p_doc(fields, values)
             if _id in seen:
                 logging.info('duplicate')
@@ -111,4 +154,4 @@ def _get_fields(path):
     rf = open(path, 'r', encoding='utf8')
     line = rf.readline()
     rf.close()
-    return line.strip().split(',')
+    return line.strip().split('\t')

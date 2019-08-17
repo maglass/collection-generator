@@ -5,6 +5,7 @@ def to_video(data):
     doc['video_id'] = data['video_id']
     doc['view_cnt'] = str(data['views'])
     doc['rating'] = str(data['rating'])
+    doc['rating'] = str(data['rating'])
     doc['video_length'] = data['length']
     return doc
 
