@@ -10,8 +10,14 @@ from core.exceptions import NotValidatedArguments, FailParsingDocument, FailColl
 
 def _make_header_file(fields, output_path):
     # Make header file
+    if not len(fields) == len(set(fields)):
+        raise FailCollectionGenerate('Wrong fields (duplicate field): {}'.format(', '.join(fields)))
+
     with open(output_path, 'w', encoding=configs.ENCODE_DECODE) as wf:
         wf.write('\t'.join(fields))
+
+    logging.info('Write header file: {})'.format(output_path))
+    logging.info('Fields ({}): {}'.format(len(fields), ', '.join(fields)))
 
 
 def _make_base_collection(reader, output_path, fields, seq='\t', null='', encoding='utf8'):
@@ -19,9 +25,9 @@ def _make_base_collection(reader, output_path, fields, seq='\t', null='', encodi
     n_skip_input = 0
     n_video = 0
     start_time = datetime.now()
-
+    logging.info("Start make base collection: {}".format(start_time))
     wf = open(output_path, 'w', encoding=encoding)
-    for line in reader:
+    for n, line in enumerate(reader):
         try:
             n_total_input += 1
             data = json.loads(line)
@@ -31,11 +37,19 @@ def _make_base_collection(reader, output_path, fields, seq='\t', null='', encodi
                 doc = _parse(data)
                 wf.write(seq.join(str(doc.get(ff, null)) for ff in fields))
                 wf.write('\n')
+
+            if 0 < n and (n % 100 == 0):
+                logging.info('Running: {}'.format(n))
+
         except Exception as e:
             n_skip_input += 1
+            logging.error("line: {}".format(n))
             logging.error(FailParsingDocument(e))
+
     wf.close()
     end_time = datetime.now()
+    running_time = end_time - start_time
+    logging.info("End make base collection: {} running: {}".format(end_time, running_time))
 
     information = dict()
     information['n_total_input'] = n_total_input
@@ -43,7 +57,7 @@ def _make_base_collection(reader, output_path, fields, seq='\t', null='', encodi
     information['n_video'] = n_video
     information['start_time'] = start_time
     information['end_time'] = end_time
-    information['running_time'] = end_time - start_time
+    information['running_time'] = running_time
     return information
 
 
@@ -103,7 +117,6 @@ if __name__ == '__main__':
     youtube_data_path = argv[0]
     output_dir_path = argv[1]
 
-    # Make output directory
     os.mkdir(output_dir_path)
 
     # Make header file
