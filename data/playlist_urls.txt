@@ -1,3 +1,9 @@
+# 백종원
+- 백종원의 장사이야기	https://www.youtube.com/watch?v=U78HrtlOn9c&list=PLoABXt5mipg5dHfmiwu9YbJUaPEIRThVU
+- 백종원의 쿠킹로그	https://www.youtube.com/watch?v=ny9XkQbN6sI&list=PLoABXt5mipg6mIdGKBuJlv5tmQFAQ3OYr
+- 백종원의 백종원 레시피	https://www.youtube.com/watch?v=-EwR5eshbPE&list=PLoABXt5mipg4lPwTJdH3Bv_4NRZHIhAQK
+- 백종원의 대용량 레시피	https://www.youtube.com/watch?v=cNfbDK9vIFI&list=PLoABXt5mipg4vsOpJb0Aeldlj3A6xq4jQ
+
 # 세바시
 - 자막	https://www.youtube.com/watch?v=JRyMvfegDcQ&list=PLI6bDyv0uVQBDIuRCrzQGFF2WaXIXvjb5
 
@@ -20,10 +26,6 @@
 - 맛있는 다이어트	https://www.youtube.com/watch?v=5IOFfTW7Ri8&list=PLDsz9b-EKyMeqJbk9OQTZWqm3Wvfjf5OT
 - 아는만큰 빠진다	https://www.youtube.com/watch?v=e9ew_TGVZOA&list=PLDsz9b-EKyMdKx82rmvkTk_H2QgCK5AHm
 - 식이섬유	https://www.youtube.com/watch?v=KvHzQsAgCNE&list=PLDsz9b-EKyMfF1bssZR7VVs6e-5bgPBlq
-
-# MOOC: Python (파이썬 강좌)
-# 파이썬 관련 강좌. 자막 존재
-- 파이썬강좌	https://www.youtube.com/playlist?list=PLBHVuYlKEkUJvRVv9_je9j3BpHwGHSZHz
 
 # 피지컬겔러리
 # 스트레칭 및 재활 치료법 관련.

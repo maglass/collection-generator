@@ -3,9 +3,9 @@ class NotValidatedArguments(BaseException):
         super().__init__('{} args: {}'.format(because, ' '.join(arguments)))
 
 
-class FailParsingDocument(BaseException):
+class FailCollectionGenerate(BaseException):
     pass
 
 
-class FailCollectionGenerate(BaseException):
+class FailParsingDocument(BaseException):
     pass

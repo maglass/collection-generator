@@ -1,11 +1,87 @@
 import json
 import os
 import sys
-import configs
 import logging
+from datetime import datetime
 
-from core import docparser
-from core.exception import NotValidatedArguments, FailParsingDocument, FailCollectionGenerate
+import configs
+from core.exceptions import NotValidatedArguments, FailParsingDocument, FailCollectionGenerate
+
+
+def _make_header_file(fields, output_path):
+    # Make header file
+    with open(output_path, 'w', encoding=configs.ENCODE_DECODE) as wf:
+        wf.write('\t'.join(fields))
+
+
+def _make_base_collection(reader, output_path, fields, seq='\t', null='', encoding='utf8'):
+    n_total_input = 0
+    n_skip_input = 0
+    n_video = 0
+    start_time = datetime.now()
+
+    wf = open(output_path, 'w', encoding=encoding)
+    for line in reader:
+        try:
+            n_total_input += 1
+            data = json.loads(line)
+            d_type = data['type']
+            if d_type == 'youtube':
+                n_video += 1
+                doc = _parse(data)
+                wf.write(seq.join(str(doc.get(ff, null)) for ff in fields))
+                wf.write('\n')
+        except Exception as e:
+            n_skip_input += 1
+            logging.error(FailParsingDocument(e))
+    wf.close()
+    end_time = datetime.now()
+
+    information = dict()
+    information['n_total_input'] = n_total_input
+    information['n_skip_input'] = n_skip_input
+    information['n_video'] = n_video
+    information['start_time'] = start_time
+    information['end_time'] = end_time
+    information['running_time'] = end_time - start_time
+    return information
+
+
+def _save_and_check_information(information, save_path):
+    with open(save_path, 'w', encoding=configs.ENCODE_DECODE) as wf:
+        for ii in information.items():
+            wf.write('\t'.join(map(str, ii)))
+            wf.write('\n')
+
+    n_total_input = information['n_total_input']
+    n_skip_input = information['n_skip_input']
+    n_video = information['n_video']
+    running_time = information['running_time']
+
+    # Check base collection
+    logging.info('Total youtube data rows: {}'.format(n_total_input))
+    logging.info('Skip youtube data rows: {}'.format(n_skip_input))
+    logging.info('Number of video: {}'.format(n_video, n_video / n_total_input))
+    logging.info('Running time: {}'.format(running_time))
+    if n_skip_input > (n_total_input * 0.20):
+        raise FailCollectionGenerate(
+            'Fail because too much skip documents: {} / {}'.format(n_skip_input, n_total_input))
+
+
+def _get_reader(path):
+    return open(path, 'r', encoding=configs.ENCODE_DECODE)
+
+
+def _parse(youtube):
+    yt = youtube
+    _doc = dict()
+    _doc['type'] = 'video'
+    _doc['title'] = yt['title']
+    _doc['video_id'] = yt['video_id']
+    _doc['view_cnt'] = str(yt['views'])
+    _doc['rating'] = str(yt['rating'])
+    _doc['video_length'] = yt['length']
+    return _doc
 
 
 def _check_validated_arguments(arguments):
@@ -20,61 +96,28 @@ def _check_validated_arguments(arguments):
 
 
 if __name__ == '__main__':
-    """
-    data_path:
-        . Youtube 데이터 파일 경로
-    collection_dir_path:
-        . 생성될 header, base-collection 파일을 저장할 디렉토리 경로
-    """
     logging.getLogger().setLevel(logging.INFO)
     argv = sys.argv[1:]
-    _check_validated_arguments(argv)
 
-    data_path = argv[0]
+    _check_validated_arguments(argv)
+    youtube_data_path = argv[0]
     output_dir_path = argv[1]
 
     # Make output directory
     os.mkdir(output_dir_path)
 
     # Make header file
-    fields = configs.DOC_FIELDS
     header_path = os.path.join(output_dir_path, configs.HEADER_FILE_NAME)
-    with open(header_path, 'w', encoding=configs.ENCODE_DECODE) as wf:
-        wf.write('\t'.join(fields))
+    _make_header_file(configs.DOC_FIELDS, header_path)
 
     # Make collection file
-    seq = configs.COLLECTION_VALUE_SEP
-    null = configs.COLLECTION_NULL_VALUE
-    collection_path = os.path.join(output_dir_path, configs.BASE_COLLECTION_FILE_NAME)
+    base_collection_path = os.path.join(output_dir_path, configs.BASE_COLLECTION_FILE_NAME)
+    youtube_data_reader = _get_reader(youtube_data_path)
+    info = _make_base_collection(youtube_data_reader, base_collection_path, configs.DOC_FIELDS,
+                                 seq=configs.COLLECTION_VALUE_SEP, null=configs.COLLECTION_NULL_VALUE,
+                                 encoding=configs.ENCODE_DECODE)
+    youtube_data_reader.close()
 
-    n_total = 0
-    n_skip = 0
-    rf = open(data_path, 'r', encoding=configs.ENCODE_DECODE)
-    wf = open(collection_path, 'w', encoding=configs.ENCODE_DECODE)
-    for line in rf:
-        n_total += 1
-
-        try:
-            data = json.loads(line)
-            d_type = data['type']
-            if d_type == 'youtube':
-                doc = docparser.to_video(data)
-            elif d_type == 'playlist':
-                doc = docparser.to_playlist(data)
-            else:
-                raise FailParsingDocument()
-            wf.write(seq.join(str(doc.get(ff, null)) for ff in fields))
-            wf.write('\n')
-        except Exception as e:
-            n_skip += 1
-            logging.error(e)
-
-    rf.close()
-    wf.close()
-
-    n_documents = n_total - n_skip
-    logging.info('Total youtube data rows: {}'.format(n_total))
-    logging.info('Skip youtube data rows: {}'.format(n_skip))
-    logging.info('Collection documents num: {}'.format(n_documents))
-    if n_documents < (n_total * 0.8):
-        raise FailCollectionGenerate('Fail because too much skip documents: {} / {}'.format(n_skip, n_total))
+    # Check collection
+    information_path = os.path.join(output_dir_path, configs.BASE_COLLECTION_INFO_FILE_NAME)
+    _save_and_check_information(info, information_path)
