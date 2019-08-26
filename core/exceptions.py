@@ -9,3 +9,7 @@ class FailCollectionGenerate(BaseException):
 
 class FailParsingDocument(BaseException):
     pass
+
+
+class FailAnalysisText(BaseException):
+    pass
