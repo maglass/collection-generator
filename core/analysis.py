@@ -24,6 +24,13 @@ def tokenize(text):
     return [t['token'] for t in content['tokens']]
 
 
+def close():
+    headers = {'Content-Type': 'application/json; charset=utf-8'}
+    url = common.url_join(_ELASTIC_SEARCH_HOST, 'analyzer-000')
+    rr = requests.delete(url, headers=headers)
+    print(rr.content)
+
+
 def make_analyzer():
     data = {
         "settings": {
@@ -33,14 +40,14 @@ def make_analyzer():
                         "analyzer-000": {
                             "type": "custom",
                             "tokenizer": "tokenizer-000",
-                            "filter": ["lowercase", "filter-000"],
-                            "user_dictionary": "dic/nori_userdict_ko.txt"
+                            "filter": ["lowercase", "filter-000"]
                         }
                     },
                     "tokenizer": {
                         "tokenizer-000": {
                             "type": "nori_tokenizer",
-                            "decompound_mode": "mixed"
+                            "decompound_mode": "mixed",
+                            "user_dictionary": "dictionaries/compound.txt"
                         }
                     },
                     "filter": {
@@ -78,6 +85,13 @@ def make_analyzer():
                                 "XSN",
                                 "XSV"
                             ]
+                        },
+                        "synonym": {
+                            "type": "synonym",
+                            "synonym": {
+                                "type": "synonym",
+                                "synonyms": ["foo, bar => baz"]
+                            }
                         }
                     },
                 }
@@ -87,7 +101,7 @@ def make_analyzer():
 
     body = json.dumps(data)
     headers = {'Content-Type': 'application/json; charset=utf-8'}
-
+    close()
     url = common.url_join(_ELASTIC_SEARCH_HOST, 'analyzer-000')
     rr = requests.put(url, headers=headers, data=body)
     print(rr.content)

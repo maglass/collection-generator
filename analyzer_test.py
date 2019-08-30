@@ -1,4 +1,6 @@
 from core import analysis
 
 if __name__ == '__main__':
-    print(analysis.tokenize('다이어트에 필요한 운동'))
+    # analysis.close()
+    analysis.make_analyzer()
+    print(analysis.tokenize('세바시 강연'))
