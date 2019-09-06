@@ -7,6 +7,3 @@ def url_join(*args):
 
 def clean_text(text):
     return re.sub('[-=+,#/\?:^$.@*\"※~&%ㆍ!』\\‘|\(\)\[\]\<\>`\'…》]', '', text)
-
-if __name__ == '__main__':
-    print(type(clean_text('asfdasfasdfa34###34sf')))
