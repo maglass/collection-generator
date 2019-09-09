@@ -3,34 +3,47 @@ import os
 import sys
 import logging
 from datetime import datetime
-from utils import burkets
 
-import configs
 from core.exceptions import NotValidatedArguments, FailParsingDocument, FailCollectionGenerate
 from core.common import clean_text
 
+_ENCODE_DECODE = 'utf8'
 
-def _make_header_file(fields, output_path):
-    # Make header file
-    if not len(fields) == len(set(fields)):
-        raise FailCollectionGenerate('Wrong fields (duplicate field): {}'.format(', '.join(fields)))
+COLLECTION_VALUE_SEP = '\t'
+COLLECTION_NULL_VALUE = ''
 
-    with open(output_path, 'w', encoding=configs.ENCODE_DECODE) as wf:
-        wf.write(','.join(fields))
+COLLECTION_FIELDS = list()
+COLLECTION_FIELDS.append('type')
+COLLECTION_FIELDS.append('channel_id')
+COLLECTION_FIELDS.append('channel_name')
+COLLECTION_FIELDS.append('video_id')
+COLLECTION_FIELDS.append('playlist_id')
+COLLECTION_FIELDS.append('title')
+COLLECTION_FIELDS.append('view_cnt')
+COLLECTION_FIELDS.append('video_length')
+COLLECTION_FIELDS.append('rating')
+COLLECTION_FIELDS.append('like_cnt')
 
-    logging.info('Write header file: {})'.format(output_path))
-    logging.info('Fields ({}): {}'.format(len(fields), ', '.join(fields)))
+CORPUS_FIELDS = list()
+CORPUS_FIELDS.append('video_id')
+CORPUS_FIELDS.append('channel_name')
+CORPUS_FIELDS.append('channel_id')
+CORPUS_FIELDS.append('playlist_id')
+CORPUS_FIELDS.append('title')
+CORPUS_FIELDS.append('description')
 
 
-def _make_base_collection_and_corpus(reader, collection_output_path, corpus_output_path, fields, seq='\t', null='',
-                                     encoding='utf8'):
+def _make_base_collection_and_corpus(youtube_data_path, collection_output_path, corpus_output_path, fields, seq='\t',
+                                     null='',
+                                     encoding=_ENCODE_DECODE):
     n_total_input = 0
     n_skip_input = 0
     n_video = 0
     start_time = datetime.now()
     collection_wf = open(collection_output_path, 'w', encoding=encoding)
     corpus_wf = open(corpus_output_path, 'w', encoding=encoding)
-    for n, line in enumerate(reader):
+    youtube_data_reader = open(youtube_data_path, 'r', encoding=_ENCODE_DECODE)
+    for n, line in enumerate(youtube_data_reader):
         try:
             n_total_input += 1
             data = json.loads(line)
@@ -42,10 +55,17 @@ def _make_base_collection_and_corpus(reader, collection_output_path, corpus_outp
                 collection_wf.write('\n')
 
                 video_id = doc['video_id']
+                channel_name = doc['channel_name']
+                channel_id = doc['channel_id']
+                playlist_id = doc['playlist_id']
                 title = clean_text(doc['title']).replace('\n', ' ').replace('\t', ' ')
                 description = clean_text(doc['description']).replace('\n', ' ').replace('\t', ' ')
+
                 output = list()
                 output.append(video_id)
+                output.append(channel_name)
+                output.append(channel_id)
+                output.append(playlist_id)
                 output.append(title)
                 output.append(description)
                 corpus_wf.write('\t'.join(output))
@@ -58,6 +78,7 @@ def _make_base_collection_and_corpus(reader, collection_output_path, corpus_outp
             logging.error("line: {}".format(n))
             logging.error(FailParsingDocument(e))
 
+    youtube_data_reader.close()
     collection_wf.close()
     corpus_wf.close()
     end_time = datetime.now()
@@ -74,33 +95,16 @@ def _make_base_collection_and_corpus(reader, collection_output_path, corpus_outp
     return information
 
 
-def _check_and_save_summary(summary, save_path):
-    with open(save_path, 'w', encoding=configs.ENCODE_DECODE) as wf:
-        header = summary.keys()
-        values = [summary[ff] for ff in header]
-        wf.write('\t'.join(header))
-        wf.write('\n')
+def _make_header_file(fields, output_path):
+    # Make header file
+    if not len(fields) == len(set(fields)):
+        raise FailCollectionGenerate('Wrong fields (duplicate field): {}'.format(', '.join(fields)))
 
-        wf.write('\t'.join(map(str, values)))
-        wf.write('\n')
+    with open(output_path, 'w', encoding=_ENCODE_DECODE) as wf:
+        wf.write(','.join(fields))
 
-    n_total_input = summary['n_total_input']
-    n_skip_input = summary['n_skip_input']
-    n_video = summary['n_video']
-    running_time = summary['running_time']
-
-    # Check base collection
-    logging.info('Total youtube data rows: {}'.format(n_total_input))
-    logging.info('Skip youtube data rows: {}'.format(n_skip_input))
-    logging.info('Number of video: {}'.format(n_video, n_video / n_total_input))
-    logging.info('Running time: {}'.format(running_time))
-    if n_skip_input > (n_total_input * 0.20):
-        raise FailCollectionGenerate(
-            'Fail because too much skip documents: {} / {}'.format(n_skip_input, n_total_input))
-
-
-def _get_reader(path):
-    return open(path, 'r', encoding=configs.ENCODE_DECODE)
+    logging.info('Write header file: {})'.format(output_path))
+    logging.info('Fields ({}): {}'.format(len(fields), ', '.join(fields)))
 
 
 def _parse(youtube):
@@ -108,7 +112,10 @@ def _parse(youtube):
     _doc = dict()
     _doc['type'] = 'video'
     _doc['title'] = yt['title']
+    _doc['channel_id'] = yt['channel_id']
+    _doc['channel_name'] = yt['channel_name']
     _doc['video_id'] = yt['video_id']
+    _doc['playlist_id'] = yt['playlist_id']
     _doc['view_cnt'] = str(yt['views'])
     _doc['rating'] = str(yt['rating'])
     _doc['video_length'] = yt['length']
@@ -116,43 +123,20 @@ def _parse(youtube):
     return _doc
 
 
-def _check_validated_arguments(arguments):
-    if not len(arguments) == 2:
-        raise NotValidatedArguments(arguments, "Invalidated argument number")
-
-    if not os.path.isfile(arguments[0]):
-        raise NotValidatedArguments(arguments, "Not exists youtube data file")
-
-    if os.path.isdir(arguments[1]):
-        raise NotValidatedArguments(arguments, "Already exists base-collection directory")
-
-
 if __name__ == '__main__':
     logging.getLogger().setLevel(logging.INFO)
+
     argv = sys.argv[1:]
 
-    _check_validated_arguments(argv)
     youtube_data_path = argv[0]
-    output_dir_path = argv[1]
+    collection_path = argv[1]
+    collection_header_path = argv[2]
+    corpus_path = argv[3]
+    corpus_header_path = argv[4]
 
-    os.mkdir(output_dir_path)
+    _make_header_file(COLLECTION_FIELDS, collection_header_path)
+    _make_header_file(CORPUS_FIELDS, corpus_header_path)
 
-    # Make header file
-    header_path = os.path.join(output_dir_path, configs.CORPUS_HEADER_NAME)
-    _make_header_file(configs.DOC_FIELDS, header_path)
-
-    corpus_header_path = os.path.join(output_dir_path, configs.CORPUS_HEADER_NAME)
-    _make_header_file(['video_id', 'title', 'description'], corpus_header_path)
-    # Make collection file
-    base_collection_path = os.path.join(output_dir_path, configs.BASE_COLLECTION_FILE_NAME)
-
-    corpus_path = os.path.join(output_dir_path, configs.CORPUS_FILE_NAME)
-    youtube_data_reader = _get_reader(youtube_data_path)
-    info = _make_base_collection_and_corpus(youtube_data_reader, base_collection_path, corpus_path, configs.DOC_FIELDS,
-                                            seq=configs.COLLECTION_VALUE_SEP, null=configs.COLLECTION_NULL_VALUE,
-                                            encoding=configs.ENCODE_DECODE)
-    youtube_data_reader.close()
-
-    # Check collection
-    summary_path = os.path.join(output_dir_path, configs.BASE_COLLECTION_SUMMARY_FILE_NAME)
-    _check_and_save_summary(info, summary_path)
+    info = _make_base_collection_and_corpus(
+        youtube_data_path, collection_path, corpus_path, COLLECTION_FIELDS,
+        seq=COLLECTION_VALUE_SEP, null=COLLECTION_NULL_VALUE, encoding=_ENCODE_DECODE)

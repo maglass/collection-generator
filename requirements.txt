@@ -1,3 +1,5 @@
+numpy
+scikit-learn
 awscli==1.16.228
 boto3==1.9.218
 requests==2.21.0
