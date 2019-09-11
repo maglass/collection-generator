@@ -1,3 +1,4 @@
+elasticsearch
 numpy
 scikit-learn
 awscli==1.16.228

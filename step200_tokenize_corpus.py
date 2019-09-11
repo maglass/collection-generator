@@ -2,7 +2,7 @@ import logging
 import sys
 
 import configs
-from core import tokenizer
+from core import text
 
 
 
@@ -24,4 +24,4 @@ if __name__ == '__main__':
     title_desc_tokens_path = argv[2]
     title_desc_tokens_header_path = argv[3]
     logging.getLogger().setLevel(logging.INFO)
-    tokenizer.run(corpus_path, corpus_header_path, title_desc_tokens_path, title_desc_tokens_header_path)
+    text.run(corpus_path, corpus_header_path, title_desc_tokens_path, title_desc_tokens_header_path)

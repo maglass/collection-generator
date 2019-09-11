@@ -99,5 +99,13 @@ def get_step02_append_collection_header_path(directory_name):
     return os.path.join(step02_output, STEP02_APPENDED_COLLECTION_HEADER_NAME)
 
 
-def setting_logger():
-    logging.getLogger().setLevel(logging.INFO)
+STEP03_DIRECTORY_NAME = 'step03'
+
+
+def get_step03_output_directory_path(directory_name):
+    root_output_dir = get_local_output_root_directory_path(directory_name)
+    return os.path.join(root_output_dir, STEP03_DIRECTORY_NAME)
+
+
+def get_bucket_step03_output_directory_path(directory_name):
+    return '{}/{}'.format(directory_name, STEP03_DIRECTORY_NAME)
