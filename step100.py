@@ -1,6 +1,5 @@
 import logging
 import sys
-from datetime import datetime
 
 import configs
 from core import pipeline

@@ -48,6 +48,7 @@ def get_step01_corpus_header_path(directory_name):
 STEP02_DIRECTORY_NAME = 'step02'
 STEP02_DESC_TOKENS_NAME = 'title_desc_tokens.tsv'
 STEP02_DESC_TOKENS_HEADER_NAME = 'title_desc_tokens_header.csv'
+STEP02_TITLE_INDICES_NAME = 'title_indices.tsv'
 STEP02_DESC_INDICES_NAME = 'desc_indices.tsv'
 STEP02_DESC_INDICES_HEADER_NAME = 'desc_indices_header.csv'
 STEP02_APPENDED_COLLECTION_NAME = 'appended_desc_indices_collection.tsv'
@@ -71,6 +72,11 @@ def get_step02_desc_tokens_path(directory_name):
 def get_step02_desc_tokens_header_path(directory_name):
     step02_output = get_step02_output_directory_path(directory_name)
     return os.path.join(step02_output, STEP02_DESC_TOKENS_HEADER_NAME)
+
+
+def get_step02_title_indices_path(directory_name):
+    step02_output = get_step02_output_directory_path(directory_name)
+    return os.path.join(step02_output, STEP02_TITLE_INDICES_NAME)
 
 
 def get_step02_desc_indices_path(directory_name):

@@ -1,15 +1,14 @@
 import logging
-import numpy as np
-import os
+import sys
 from collections import Counter
-from sklearn.feature_extraction.text import TfidfVectorizer
+
+import numpy as np
 from numpy import dot
 from numpy.linalg import norm
-from textwrap import wrap
-import configs
-import sys
-from core import common
+from sklearn.feature_extraction.text import TfidfVectorizer
 
+import configs
+from core import common
 from core.common import extract_hangul
 
 
@@ -62,7 +61,7 @@ def _extract_indices(_text, _docs):
     output = dict()
     for vec, dd in zip(vectors, _docs):
         top_words = np.argsort(vec).flatten()[::-1]
-        top_words = top_words[:15]
+        top_words = top_words[:20]
 
         _indices = [(word_names[ii], vec[ii]) for ii in top_words]
         video_id = dd['video_id']
@@ -151,8 +150,7 @@ if __name__ == '__main__':
     tokens_path = argv[0]
     tokens_header_path = argv[1]
     indices_path = argv[2]
-    indices_header_path = argv[3]
-    black_keywords_path = argv[4]
+    black_keywords_path = argv[3]
 
     corpus = _load_corpus(tokens_header_path, tokens_path)
     black_keywords = _load_desc_black_keywords(black_keywords_path)
