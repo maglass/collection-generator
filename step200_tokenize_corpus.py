@@ -23,5 +23,6 @@ if __name__ == '__main__':
     corpus_header_path = argv[1]
     title_desc_tokens_path = argv[2]
     title_desc_tokens_header_path = argv[3]
+
     logging.getLogger().setLevel(logging.INFO)
-    text.run(corpus_path, corpus_header_path, title_desc_tokens_path, title_desc_tokens_header_path)
+    text.tokenize_corpus(corpus_path, corpus_header_path, title_desc_tokens_path, title_desc_tokens_header_path)
