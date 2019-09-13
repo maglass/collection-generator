@@ -3,50 +3,27 @@ import sys
 from collections import Counter
 
 import numpy as np
-from numpy import dot
-from numpy.linalg import norm
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 import configs
 from core import common
-from core.common import extract_hangul
+from core.textutils import extract_hangul
 
 
-def _load_corpus(h_path, c_path):
-    # Load fields from header file
-    fields = common.load_fields(h_path)
-
-    # Load corpus
-    n_fields = len(fields)
-    n_skip = 0
-    _corpus = list()
-    with open(c_path, 'r', encoding=configs.ENCODE_DECODE) as rf:
-        for n_line, line in enumerate(rf):
-            values = line.rstrip('\n').split('\t')
-            if not n_fields == len(values):
-                logging.warning('Skip line "not equal field ({}), values ({})'.format(n_fields, len(values)))
-                n_skip += 1
-                continue
-            cor = {ff: vv for ff, vv in zip(fields, values)}
-            _corpus.append(cor)
-    logging.info('load corpus: {:,} skip: {:,}'.format(len(_corpus), n_skip))
-    return _corpus
-
-
-def _grouping_corpus(data, field, value):
-    corpus_group = dict()
-    text_group = dict()
+def _grouping(data, field, value):
+    g_corpus = dict()
+    g_text = dict()
     for dd in data:
         key = dd[field]
-        li = corpus_group.get(key, list())
+        li = g_corpus.get(key, list())
         li.append(dd)
-        corpus_group[key] = li
+        g_corpus[key] = li
 
-        li = text_group.get(key, list())
+        li = g_text.get(key, list())
         li.append(dd[value])
-        text_group[key] = li
+        g_text[key] = li
 
-    return corpus_group, text_group
+    return g_corpus, g_text
 
 
 def _extract_indices(_text, _docs):
@@ -58,15 +35,16 @@ def _extract_indices(_text, _docs):
     word_names = np.array(model.get_feature_names())
     vectors = model.transform(_text).toarray()
 
-    output = dict()
+    _indices = dict()
     for vec, dd in zip(vectors, _docs):
-        top_words = np.argsort(vec).flatten()[::-1]
+        top_words = np.argsort(vec)
+        top_words = top_words.flatten()[::-1]
         top_words = top_words[:20]
 
-        _indices = [(word_names[ii], vec[ii]) for ii in top_words]
+        idx = [(word_names[ii], vec[ii]) for ii in top_words if vec[ii] > 0.0]
         video_id = dd['video_id']
-        output[video_id] = _indices
-    return output
+        _indices[video_id] = idx
+    return _indices
 
 
 def _handling_text(_text, _docs, _black_keywords):
@@ -89,30 +67,6 @@ def _handling_text(_text, _docs, _black_keywords):
         result_text.append(tt)
         result_doc.append(dd)
     return result_text, result_doc
-
-
-def cosine_sim(one, other):
-    return dot(one, other) / (norm(one) * norm(other))
-
-
-def _calculate_sim_title_text(_text, _docs):
-    title_text = list()
-    for tt, dd in zip(_text, _docs):
-        merged = ' '.join([tt, dd['title']])
-        title_text.append(merged)
-
-    # tf, idf 학습
-    model = TfidfVectorizer(tokenizer=lambda x: x.split()).fit(title_text)
-
-    sims = list()
-    for tt, dd in zip(_text, _docs):
-        title_vec = model.transform([dd['title']])
-        title_vec = title_vec.toarray().flatten()
-        text_vec = model.transform([tt])
-        text_vec = text_vec.toarray().flatten()
-        ss = cosine_sim(title_vec, text_vec)
-        sims.append(ss)
-    return sims
 
 
 def _remove_duplicate_text(_text):
@@ -144,21 +98,39 @@ def _load_desc_black_keywords(path):
     return _output
 
 
+def _expand_words(_text):
+    new = list()
+    for tt in _text:
+        temp = list()
+        _values = tt.split()
+        for vv in _values:
+            vvv = vv.split('A')
+            kk = vvv[0]
+            ff = int(vvv[1])
+            eee = ' '.join([kk] * ff)
+            temp.append(eee)
+        new.append(' '.join(temp))
+    return new
+
+
 if __name__ == '__main__':
-    logging.getLogger().setLevel(logging.INFO)
+    configs.setting_logger()
+
     argv = sys.argv[1:]
     tokens_path = argv[0]
     tokens_header_path = argv[1]
     indices_path = argv[2]
     black_keywords_path = argv[3]
 
-    corpus = _load_corpus(tokens_header_path, tokens_path)
+    corpus = common.load_collection(tokens_header_path, tokens_path, configs.ENCODE_DECODE)
     black_keywords = _load_desc_black_keywords(black_keywords_path)
+
     total = dict()
     indices = dict()
-    g_playlist, g_text = _grouping_corpus(corpus, 'playlist_id', 'description')
-    for p_id, docs in g_playlist.items():
-        text = g_text[p_id]
+    group, group_text = _grouping(corpus, 'playlist_id', 'description')
+    for p_id, docs in group.items():
+        text = group_text[p_id]
+        text = _expand_words(text)
         pre_text, pre_docs = _handling_text(text, docs, black_keywords)
         if not pre_text:
             continue

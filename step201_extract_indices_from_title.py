@@ -1,157 +1,17 @@
-import logging
 import sys
-from collections import Counter
-
-import numpy as np
-from numpy import dot
-from numpy.linalg import norm
-from sklearn.feature_extraction.text import TfidfVectorizer
 
 import configs
-from core import common
-from core.common import extract_hangul
-
-
-def _load_corpus(h_path, c_path):
-    # Load fields from header file
-    fields = common.load_fields(h_path)
-
-    # Load corpus
-    n_fields = len(fields)
-    n_skip = 0
-    _corpus = list()
-    with open(c_path, 'r', encoding=configs.ENCODE_DECODE) as rf:
-        for n_line, line in enumerate(rf):
-            values = line.rstrip('\n').split('\t')
-            if not n_fields == len(values):
-                logging.warning('Skip line "not equal field ({}), values ({})'.format(n_fields, len(values)))
-                n_skip += 1
-                continue
-            cor = {ff: vv for ff, vv in zip(fields, values)}
-            _corpus.append(cor)
-    logging.info('load corpus: {:,} skip: {:,}'.format(len(_corpus), n_skip))
-    return _corpus
-
-
-def _grouping_corpus(data, field, value):
-    corpus_group = dict()
-    text_group = dict()
-    for dd in data:
-        key = dd[field]
-        li = corpus_group.get(key, list())
-        li.append(dd)
-        corpus_group[key] = li
-
-        li = text_group.get(key, list())
-        li.append(dd[value])
-        text_group[key] = li
-
-    return corpus_group, text_group
-
-
-def _extract_indices(_text, _docs):
-    if not _text:
-        logging.warning('Empty text')
-        return list()
-    # tf, idf 학습
-    model = TfidfVectorizer(tokenizer=lambda x: x.split()).fit(_text)
-    word_names = np.array(model.get_feature_names())
-    vectors = model.transform(_text).toarray()
-
-    output = dict()
-    for vec, dd in zip(vectors, _docs):
-        top_words = np.argsort(vec).flatten()[::-1]
-        top_words = top_words[:20]
-
-        _indices = [(word_names[ii], vec[ii]) for ii in top_words]
-        video_id = dd['video_id']
-        output[video_id] = _indices
-    return output
-
-
-def _handling_text(_text, _docs, _black_keywords):
-    removed_text = _remove_duplicate_text(_text)
-    removed_hangul_text = [extract_hangul(tt) for tt in removed_text]
-
-    remove_stop_words_text = list()
-    for tt, dd in zip(removed_hangul_text, _docs):
-        stop_words = list()
-        stop_words.append(dd['title'])
-        stop_words.append(dd['channel_name'])
-        stop_words.extend(_black_keywords)
-        remove_stop_words_text.append(_remove_words(tt, stop_words))
-
-    result_text = list()
-    result_doc = list()
-    for tt, dd in zip(remove_stop_words_text, _docs):
-        if not tt:
-            continue
-        result_text.append(tt)
-        result_doc.append(dd)
-    return result_text, result_doc
-
-
-def cosine_sim(one, other):
-    return dot(one, other) / (norm(one) * norm(other))
-
-
-def _calculate_sim_title_text(_text, _docs):
-    title_text = list()
-    for tt, dd in zip(_text, _docs):
-        merged = ' '.join([tt, dd['title']])
-        title_text.append(merged)
-
-    # tf, idf 학습
-    model = TfidfVectorizer(tokenizer=lambda x: x.split()).fit(title_text)
-
-    sims = list()
-    for tt, dd in zip(_text, _docs):
-        title_vec = model.transform([dd['title']])
-        title_vec = title_vec.toarray().flatten()
-        text_vec = model.transform([tt])
-        text_vec = text_vec.toarray().flatten()
-        ss = cosine_sim(title_vec, text_vec)
-        sims.append(ss)
-    return sims
-
-
-def _remove_duplicate_text(_text):
-    counter = Counter(_text)
-
-    result = list()
-    for tt in _text:
-        if counter[tt] > 1:
-            result.append("")
-        else:
-            result.append(tt)
-    return result
-
-
-def _remove_words(_text, _stop_words):
-    for sw in _stop_words:
-        _text = _text.replace(sw, '')
-    return _text
-
-
-def _load_desc_black_keywords(path):
-    _output = set()
-    with open(path, 'r', encoding=configs.ENCODE_DECODE) as rf:
-        for line in rf:
-            value = line.strip()
-            if value:
-                _output.add(value)
-
-    return _output
-
+from core.common import load_collection
 
 if __name__ == '__main__':
-    logging.getLogger().setLevel(logging.INFO)
+    configs.setting_logger()
+
     argv = sys.argv[1:]
     tokens_path = argv[0]
     tokens_header_path = argv[1]
     indices_path = argv[2]
 
-    corpus = _load_corpus(tokens_header_path, tokens_path)
+    corpus = load_collection(tokens_header_path, tokens_path, encoding=configs.ENCODE_DECODE)
     with open(indices_path, 'w', encoding=configs.ENCODE_DECODE) as wf:
         for cc in corpus:
             doc_id = cc['video_id']
@@ -159,7 +19,7 @@ if __name__ == '__main__':
 
             output = list()
             output.append(doc_id)
-            values = ['{}A0.0'.format(ii) for ii in title_tokens.split()]
+            values = ['{}A0.0'.format(ii.split('A')[0]) for ii in title_tokens.split()]
             output.extend(values)
             wf.write('\t'.join(output))
             wf.write('\n')

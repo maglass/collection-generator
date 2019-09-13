@@ -12,6 +12,11 @@ STEP01_CORPUS_FILE_NAME = 'corpus.tsv'
 STEP01_CORPUS_HEADER_FILE_NAME = 'corpus_header.csv'
 
 
+def setting_logger():
+    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.getLogger().setLevel(logging.INFO)
+
+
 def get_local_output_root_directory_path(directory_name):
     return os.path.join(OUTPUT_DIRECTORY_PATH, directory_name)
 
@@ -100,6 +105,9 @@ def get_step02_append_collection_header_path(directory_name):
 
 
 STEP03_DIRECTORY_NAME = 'step03'
+STEP03_CAPTION_QUALITY_PATH = 'caption_quality.tsv'
+STEP03_APPEND_CAPTION_QUALITY_COLLECTION = 'appended_caption_quality_collection.tsv'
+STEP03_APPEND_CAPTION_QUALITY_HEADER_COLLECTION = 'appended_caption_quality_collection_header.csv'
 
 
 def get_step03_output_directory_path(directory_name):
@@ -109,3 +117,18 @@ def get_step03_output_directory_path(directory_name):
 
 def get_bucket_step03_output_directory_path(directory_name):
     return '{}/{}'.format(directory_name, STEP03_DIRECTORY_NAME)
+
+
+def get_step03_caption_quality_score_path(directory_name):
+    output_dir = get_step03_output_directory_path(directory_name)
+    return '{}/{}'.format(output_dir, STEP03_CAPTION_QUALITY_PATH)
+
+
+def appended_get_step03_caption_quality_collection_path(directory_name):
+    output_dir = get_step03_output_directory_path(directory_name)
+    return '{}/{}'.format(output_dir, STEP03_APPEND_CAPTION_QUALITY_COLLECTION)
+
+
+def get_step03_caption_quality_collection_header_path(directory_name):
+    output_dir = get_step03_output_directory_path(directory_name)
+    return '{}/{}'.format(output_dir, STEP03_APPEND_CAPTION_QUALITY_HEADER_COLLECTION)

@@ -1,18 +1,12 @@
-import logging
 import sys
 
 import configs
 from core import pipeline
 
-
-def tokenize(x):
-    return x.split()
-
-
 if __name__ == '__main__':
-    logging.getLogger().setLevel(logging.INFO)
-    argv = sys.argv[1:]
+    configs.setting_logger()
 
+    argv = sys.argv[1:]
     directory_name = argv[0]
 
     steps = list()

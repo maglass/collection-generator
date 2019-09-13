@@ -1,31 +1,7 @@
-import logging
-import os
 import sys
 
 import configs
 from core import common
-
-
-def _load_corpus(h_path, c_path):
-    # Load fields from header file
-    fields = common.load_fields(h_path)
-
-    # Load corpus
-    n_fields = len(fields)
-    n_skip = 0
-    _corpus = list()
-    with open(c_path, 'r', encoding=configs.ENCODE_DECODE) as rf:
-        for n_line, line in enumerate(rf):
-            values = line.rstrip('\n').split('\t')
-            if not n_fields == len(values):
-                logging.warning('Skip line "not equal field ({}), values ({})'.format(n_fields, len(values)))
-                logging.warning(values)
-                n_skip += 1
-                continue
-            cor = {ff: vv for ff, vv in zip(fields, values)}
-            _corpus.append(cor)
-    logging.info('load corpus: {:,} skip: {:,}'.format(len(_corpus), n_skip))
-    return _corpus
 
 
 def _load_expanded_indices(path):
@@ -40,7 +16,7 @@ def _load_expanded_indices(path):
 
 
 if __name__ == '__main__':
-    logging.getLogger().setLevel(logging.INFO)
+    configs.setting_logger()
 
     argv = sys.argv[1:]
     collection_path = argv[0]
@@ -51,7 +27,7 @@ if __name__ == '__main__':
     appended_collection_header_path = argv[5]
 
     fields = common.load_fields(collection_header_path)
-    collection = _load_corpus(collection_header_path, collection_path)
+    collection = common.load_collection(collection_header_path, collection_path, encoding=configs.ENCODE_DECODE)
     title_indices = _load_expanded_indices(title_indices_path)
     desc_indices = _load_expanded_indices(desc_indices_path)
     with open(appended_collection_path, 'w', encoding=configs.ENCODE_DECODE) as wf:

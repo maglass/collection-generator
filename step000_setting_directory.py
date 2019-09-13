@@ -2,12 +2,12 @@ import os
 import logging
 import sys
 
-from utils import burkets
 import configs
+from utils import burkets
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(asctime)-15s %(message)s')
-    logging.getLogger().setLevel(logging.INFO)
+    configs.setting_logger()
+
     directory_name = sys.argv[1]
 
     if not os.path.isdir(configs.OUTPUT_DIRECTORY_PATH):

@@ -1,11 +1,11 @@
-import logging
 import os
 import sys
 
+import configs
 from utils import burkets
 
 if __name__ == '__main__':
-    logging.getLogger().setLevel(logging.INFO)
+    configs.setting_logger()
     argv = sys.argv[1:]
 
     from_path = argv[0]
