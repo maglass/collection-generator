@@ -1,0 +1,17 @@
+{
+  "mappings": {
+    "_doc": {
+      "properties": {
+        "title": {
+          "type": "text"
+        },
+        "description": {
+          "type": "text"
+        },
+        "caption": {
+          "type": "text"
+        }
+      }
+    }
+  }
+}

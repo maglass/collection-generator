@@ -1,0 +1,20 @@
+{
+  "mappings": {
+    "_doc": {
+      "properties": {
+        "title": {
+          "type": "text",
+          "analyzer": "nori"
+        },
+        "description": {
+          "type": "text",
+          "analyzer": "nori"
+        },
+        "caption": {
+          "type": "text",
+          "analyzer": "nori"
+        }
+      }
+    }
+  }
+}

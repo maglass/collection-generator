@@ -11,6 +11,6 @@ if __name__ == '__main__':
     corpus_header_path = argv[1]
     title_desc_tokens_path = argv[2]
     title_desc_tokens_header_path = argv[3]
-    version = 'v0.0.2'
+    version = 'final'
     textutils.tokenize_corpus(corpus_path, corpus_header_path, title_desc_tokens_path,
                               title_desc_tokens_header_path, version)

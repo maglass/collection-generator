@@ -1,0 +1,86 @@
+{
+  "mappings": {
+    "_doc": {
+      "properties": {
+        "title": {
+          "type": "text",
+          "analyzer": "title-analyzer"
+        },
+        "description": {
+          "type": "text",
+          "analyzer": "title-analyzer"
+        },
+        "caption": {
+          "type": "text",
+          "analyzer": "title-analyzer"
+        }
+      }
+    }
+  },
+  "settings": {
+    "index": {
+      "analysis": {
+        "analyzer": {
+          "title-analyzer": {
+            "type": "custom",
+            "tokenizer": "compound_dict_tokenizer",
+            "filter": [
+              "lowercase",
+              "synonym_dict_filter",
+              "pos_filter"
+            ]
+          }
+        },
+        "tokenizer": {
+          "compound_dict_tokenizer": {
+            "type": "nori_tokenizer",
+            "decompound_mode": "discard",
+            "user_dictionary": "dictionaries/compound.txt"
+          }
+        },
+        "filter": {
+          "synonym_dict_filter": {
+            "type": "synonym",
+            "ignore_case": true,
+            "synonyms_path": "dictionaries/synonyms.txt"
+          },
+          "pos_filter": {
+            "type": "nori_part_of_speech",
+            "stoptags": [
+              "E",
+              "IC",
+              "J",
+              "MAG",
+              "MM",
+              "NA",
+              "NR",
+              "SC",
+              "SE",
+              "SF",
+              "SH",
+              "SL",
+              "SN",
+              "SP",
+              "SSC",
+              "SSO",
+              "SY",
+              "UNA",
+              "UNKNOWN",
+              "VA",
+              "VCN",
+              "VCP",
+              "VSV",
+              "VV",
+              "VX",
+              "XPN",
+              "XR",
+              "XSA",
+              "XSN",
+              "XSV"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
