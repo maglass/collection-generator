@@ -41,7 +41,7 @@ def _extract_indices(_text, _docs):
         top_words = top_words.flatten()[::-1]
         top_words = top_words[:20]
 
-        idx = [(word_names[ii], vec[ii]) for ii in top_words]
+        idx = [(word_names[ii], vec[ii]) for ii in top_words if vec[ii] > 0.0]
         video_id = dd['video_id']
         _indices[video_id] = idx
     return _indices
