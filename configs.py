@@ -106,6 +106,7 @@ def get_step02_append_collection_header_path(directory_name):
 
 STEP03_DIRECTORY_NAME = 'step03'
 STEP03_CAPTION_QUALITY_PATH = 'caption_quality.tsv'
+STEP03_IMAGE_QUALITY_PATH = 'image_quality.tsv'
 STEP03_APPEND_CAPTION_QUALITY_COLLECTION = 'appended_caption_quality_collection.tsv'
 STEP03_APPEND_CAPTION_QUALITY_HEADER_COLLECTION = 'appended_caption_quality_collection_header.csv'
 
@@ -121,12 +122,18 @@ def get_bucket_step03_output_directory_path(directory_name):
 
 def get_step03_caption_quality_score_path(directory_name):
     output_dir = get_step03_output_directory_path(directory_name)
-    return '{}/{}'.format(output_dir, STEP03_CAPTION_QUALITY_PATH)
+    return os.path.join(output_dir, STEP03_CAPTION_QUALITY_PATH)
+
+
+
+def get_step03_image_quality_score_path(directory_name):
+    output_dir = get_step03_output_directory_path(directory_name)
+    return os.path.join(output_dir, STEP03_IMAGE_QUALITY_PATH)
 
 
 def appended_get_step03_caption_quality_collection_path(directory_name):
     output_dir = get_step03_output_directory_path(directory_name)
-    return '{}/{}'.format(output_dir, STEP03_APPEND_CAPTION_QUALITY_COLLECTION)
+    return os.path.join(output_dir, STEP03_APPEND_CAPTION_QUALITY_COLLECTION)
 
 
 def get_step03_caption_quality_collection_header_path(directory_name):

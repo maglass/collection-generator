@@ -16,12 +16,16 @@ if __name__ == '__main__':
     steps.append(['Calculate caption', 'python', 'step300_caption_quality.py',
                   tokens_path, tokens_header_path, caption_quality])
 
+    image_quality = configs.get_step03_image_quality_score_path(directory_name)
+    steps.append(['Calculate caption', 'python', 'step301_image_quality.py',
+                  tokens_path, tokens_header_path, image_quality])
+
     collection_path = configs.get_step02_append_collection_path(directory_name)
     collection_header_path = configs.get_step02_append_collection_header_path(directory_name)
     caption_quality_collection = configs.appended_get_step03_caption_quality_collection_path(directory_name)
     caption_quality_collection_header = configs.get_step03_caption_quality_collection_header_path(directory_name)
-    steps.append(['Calculate caption', 'python', 'step301_append_caption_quality.py',
-                  collection_path, collection_header_path, caption_quality, caption_quality_collection,
+    steps.append(['Calculate caption', 'python', 'step302_append_caption_quality.py',
+                  collection_path, collection_header_path, caption_quality, image_quality, caption_quality_collection,
                   caption_quality_collection_header])
 
     step03_output_path = configs.get_step03_output_directory_path(directory_name)

@@ -22,6 +22,7 @@ COLLECTION_FIELDS.append('title')
 COLLECTION_FIELDS.append('views')
 COLLECTION_FIELDS.append('length')
 COLLECTION_FIELDS.append('rating')
+COLLECTION_FIELDS.append('summary')
 
 CORPUS_FIELDS = list()
 CORPUS_FIELDS.append('video_id')
@@ -106,7 +107,9 @@ def _parse(youtube):
     _doc['views'] = str(yt['views'])
     _doc['rating'] = str(yt['rating'])
     _doc['length'] = yt['length']
-    _doc['description'] = yt['description']
+    description = yt['description'].replace('\n', ' ').replace('\t', ' ')
+    _doc['description'] = description
+    _doc['summary'] = description[:100]
 
     caption_type, caption = _get_captions(yt['captions'])
     _doc['caption_type'] = caption_type

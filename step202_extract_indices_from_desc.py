@@ -39,7 +39,7 @@ def _extract_indices(_text, _docs):
     for vec, dd in zip(vectors, _docs):
         top_words = np.argsort(vec)
         top_words = top_words.flatten()[::-1]
-        top_words = top_words[:20]
+        top_words = top_words[:10]
 
         idx = [(word_names[ii], vec[ii]) for ii in top_words if vec[ii] > 0.0]
         video_id = dd['video_id']

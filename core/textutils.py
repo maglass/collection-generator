@@ -28,12 +28,12 @@ def clean_text(text):
     return re.sub('[-=+,#/\?:^$.@*\"※~&%ㆍ!』\\‘|\(\)\[\]\<\>`\'…》]', '', text)
 
 
-def tokenize(text):
+def tokenize(text, analyzer_name):
     headers = dict()
     headers['Content-Type'] = 'application/json; charset=utf-8'
 
     params = dict()
-    params['analyzer'] = _ANALYZER_NAME
+    params['analyzer'] = analyzer_name
     params['text'] = text
     data = json.dumps(params)
 
@@ -44,6 +44,7 @@ def tokenize(text):
         return
 
     content = rr.json()
+    print(content)
     return [t['token'] for t in content['tokens']]
 
 
@@ -136,7 +137,7 @@ def search_and_get_tokens(doc_id):
     if not rr.status_code == 200:
         raise FailRequestAPI(rr.content, url, data)
     content = rr.json()
-    sleep(0.4)
+    sleep(0.5)
 
     terms = content['term_vectors']['title']['terms']
     title = ['{}A{}'.format(tt[0], tt[1]['term_freq']) for tt in terms.items()]

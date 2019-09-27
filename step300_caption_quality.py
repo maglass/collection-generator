@@ -33,7 +33,9 @@ def _make_documents(data):
         for term, freq in term_freq.items():
             doc.extend([term] * freq)
 
-        _documents.append(' '.join(doc))
+        if doc:
+            _documents.append(' '.join(doc))
+
     return _documents
 
 
@@ -46,11 +48,10 @@ if __name__ == '__main__':
     quality_score_path = argv[2]
 
     corpus = common.load_collection(tokens_header_path, tokens_path, configs.ENCODE_DECODE)
-    g_video = _grouping_corpus(corpus, 'video_id')
+    g_video = _grouping_corpus(corpus, 'channel_id')
     with open(quality_score_path, 'w', encoding=configs.ENCODE_DECODE) as wf:
-        for v_id, values in g_video.items():
+        for values in g_video.values():
             documents = _make_documents(values)
-
             model = TfidfVectorizer(tokenizer=lambda x: x.split()).fit(documents)
 
             for vv in values:
@@ -71,5 +72,5 @@ if __name__ == '__main__':
                     captions.extend([term] * freq)
                 vec_caption = model.transform([' '.join(captions)])
 
-                wf.write('{}\t{}'.format(v_id, cosine_similarity(vec_title_desc, vec_caption)[0][0]))
+                wf.write('{}\t{}'.format(vv['video_id'], cosine_similarity(vec_title_desc, vec_caption)[0][0]))
                 wf.write('\n')
