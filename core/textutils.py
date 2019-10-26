@@ -156,7 +156,7 @@ def _create_index(version):
 
 
 def _get_index_create_template(version):
-    index_template_path = 'data/index-template-{}.json'.format(version)
+    index_template_path = 'data/index_templates/index-template-{}.json'.format(version)
     with open(index_template_path, 'r') as rf:
         template = rf.read()
         return template

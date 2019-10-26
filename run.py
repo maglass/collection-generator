@@ -10,10 +10,9 @@ if __name__ == '__main__':
 
     youtube_data_path = sys.argv[1]
     now = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    now = '2019-09-14-08-45-00'
     steps = list()
-    # steps.append(['Setting directory', 'python', 'step000_setting_directory.py', now])
-    # steps.append(['Step01', 'python', 'step100.py', now, youtube_data_path])
-    # steps.append(['Step02', 'python', 'step200.py', now])
+    steps.append(['Setting directory', 'python', 'step000_setting_directory.py', now])
+    steps.append(['Step01', 'python', 'step100.py', now, youtube_data_path])
+    steps.append(['Step02', 'python', 'step200.py', now])
     steps.append(['Step03', 'python', 'step300.py', now])
     pipeline.run(steps)

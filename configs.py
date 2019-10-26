@@ -125,7 +125,6 @@ def get_step03_caption_quality_score_path(directory_name):
     return os.path.join(output_dir, STEP03_CAPTION_QUALITY_PATH)
 
 
-
 def get_step03_image_quality_score_path(directory_name):
     output_dir = get_step03_output_directory_path(directory_name)
     return os.path.join(output_dir, STEP03_IMAGE_QUALITY_PATH)
