@@ -1,5 +1,5 @@
 elasticsearch==7.0.4
-numpy==1.17.2
+numpy==1.22.0
 scikit-learn==0.21.3
 awscli==1.16.228
 boto3==1.9.218
